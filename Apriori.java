@@ -72,18 +72,18 @@ class HashTrie {
                 node = node.get(input[i]);
             }
         }
-        /* end of string 
-        node.put(null, new HashMap<Integer, HashMap>(0)); */
+        node.put(-1, new HashMap<Integer, HashMap>(null)); //-1 indicating end of candidate because all item are positive
     }
  
-    public void contains(int[] trans, int candSize, LinkedList<int[]> newItemset) {
-        HashMap<Integer, HashMap> currentNode = root;
-        for (int i = 0; i < candSize; i++) {
-            if (currentNode.containsKey(trans[i]))
-                currentNode = currentNode.get(input[i]);
-            else 
-                return;
-        }
-        newItemset.add(Arrays.copyOf(trans, candSize));             
-    }
+   public void contains(int[] trans, int candSize, LinkedList<int[]> newItemset) {
+	        HashMap<Integer, HashMap> currentNode = root;
+	        for (int i = 0; i < candSize; i++) {
+	            if (currentNode.containsKey(trans[i]))
+	                currentNode = currentNode.get(input[i]);
+	            else 
+	                return;
+	        }
+	        if(currentNode.containsKey(-1))    // reach end of candidate
+	        	newItemset.add(Arrays.copyOf(trans, candSize));             
+	}
 }
