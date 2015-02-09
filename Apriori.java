@@ -43,3 +43,47 @@ public class Apriori {
 
     }
 }
+/*
+	Construct a HashTrie with keys as item in the candidates
+	add method: transpose a candidate into the trie
+	contains method: add the candidate to the new itemset of higher frequency
+					if the candidate is a subset of some transaction
+*/
+class HashTrie {
+    private HashMap<Integer, HashMap> root;
+ 
+    public HashTrie() {
+       root = new HashMap<Integer, HashMap>();
+    }
+    public HashTrie(LinkedList<int[]> candidates) {
+        root = new HashMap<Integer, HashMap>();
+        for (int i = 0; i < candidates.size(); i++) {
+            add(candidates.get(i));
+        }
+    }
+ 
+    public void add(int[] input) {
+        HashMap<Integer, HashMap> node = root;
+        for (int i = 0; i < input.length; i++) {
+            if (node.containsKey(input[i]))
+                node = node.get(input[i]);
+            else {
+                node.put(input[i], new HashMap<Integer, HashMap>());
+                node = node.get(input[i]);
+            }
+        }
+        /* end of string 
+        node.put(null, new HashMap<Integer, HashMap>(0)); */
+    }
+ 
+    public void contains(int[] trans, int candSize, LinkedList<int[]> newItemset) {
+        HashMap<Integer, HashMap> currentNode = root;
+        for (int i = 0; i < candSize; i++) {
+            if (currentNode.containsKey(trans[i]))
+                currentNode = currentNode.get(input[i]);
+            else 
+                return;
+        }
+        newItemset.add(Arrays.copyOf(trans, candSize));             
+    }
+}
