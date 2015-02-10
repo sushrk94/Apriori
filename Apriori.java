@@ -15,7 +15,20 @@ public class Apriori {
         candidates = new ArrayList<int[]>();
         transactions = new ArrayList<ArrayList<Integer>>();
     }
-    
+     private void fim(){
+    	int k; 
+    	List <int[]> frequent = new ArrayList<int[]>();	//frequency k-1 itemset 
+    	Collections.copy(candidates,genCan(1)); 		//generate frequent 1-itemset 
+    	
+    	for (k=2; candidates.size()!=0 ; k++){
+    		frequent.clear(); 
+    		frequent=genCan(k);						 	// k candidate set generate from k-1 frequent set 
+    		candidates.clear();
+    		Collections.copy(candidates,frequent); 		// update candidate itemset for k itemset 
+    		
+    	}
+    }
+
     private void configure(String[] args) throws Exception
     {        
         if (args.length != 0) {
@@ -50,9 +63,66 @@ public class Apriori {
         }  
     }
 
+        private ArrayList<int[]> genCan(int k){	//generate k-candidate set 
+
+    	List<int[]>tempcan = new ArrayList<int[]>();
+    	int i,j; 
+    	int[] temp,newtemp; 
+    	if (k==1){						//generate 1-itemset 
+    		temp = new int[k];
+    		for (i=0;i<999;i++) {
+    			temp[0] = i;
+    			tempcan.add(temp);
+    		}
+    	}
+    	else if (k==2) {				//generate 2-itemset 
+    		temp = new int[k-1];
+    		newtemp = new int[k-2];
+    		for(i=0;i<candidates.size();i++){
+    			for (j=i+1;j<999;j++){
+    				temp = candidates.get(i);
+    				newtemp[0]=temp[0];
+    				newtemp[1]=j; 
+    				tempcan.add(newtemp); 
+    			}
+    		}
+    	}
+    	else {							//generate k-itemset 
+    		int l,m,n,check; 
+    		temp = new int[k-1]; 
+    		int[] tempcmp = new int[k-1];
+    		newtemp = new int[k];
+    		
+    		for (i=0;i<candidates.size();i++){
+    			temp=candidates.get(i);
+    			for (j=i+1;j>candidates.size();j++){
+    				tempcmp =candidates.get(j);
+    				check = 0; 
+    				for ( l=0; l<(k-2); l++){
+    					if(temp[l]!=tempcmp[l]){
+    						break; 
+    					}
+    					check++; 
+    				}
+    				if (check==(k-2)){
+    					for (m=0;m<temp.length;m++){
+    						newtemp[m]=temp[m];
+    					}
+    					m++; 
+    					for(n=(k-2);n<tempcmp.length;n++){
+    						newtemp[m++]=tempcmp[n];
+    					}
+    					tempcan.add(newtemp);
+    				}
+    			}
+    		}
+    	}
+    	return HashTrie.generateNewItemsets(tempcan);
+    }
     public static void main(String[] args)throws Exception {
         Apriori test = new Apriori();
         test.configure(args);
+        test.fim(); 				  //calls the actual data mining algorithm fmi
         for(int i = 0; i < test.transactions.size(); i++) {
             for(int k = 0; k < test.transactions.get(i).size();k++) {
                 System.out.print(test.transactions.get(i).get(k));
@@ -97,9 +167,9 @@ class HashTrie {
         } 
     }
  
-    public ArrayList<int[]> generateNewItemsets(ArrayList<ArrayList<Integer>> transactions) {
+    public ArrayList<int[]> generateNewItemsets(ArrayList<int[]> candidates) {
         HashMap<int[], Integer> currentNode = root;
-        ArrayList<int[]> newItemsets = null;
+        ArrayList<int[]> frequent = null;
         boolean safe = false;
         for (int[] key : currentNode.keySet()) {
             for (int i = 0; i < transactions.size(); i++) {
@@ -114,7 +184,7 @@ class HashTrie {
                 currentNode.remove(key);
             }
         }
-        newItemsets.addAll(currentNode.keySet());
-        return newItemsets;  
+        frequent.addAll(currentNode.keySet());
+        return frequent;  
     }
 }
