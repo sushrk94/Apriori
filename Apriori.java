@@ -3,85 +3,67 @@ import java.util.*;
 
 public class Apriori {
 
-    private LinkedList<int[]> itemsets; //the list of current itemsets
+    private ArrayList<int[]> itemsets; //the list of current itemsets
     private String transaFile; //name of the transaction file
-    private int numItems; //max number of items in a transaction
     private int numTransactions; // total number of transactions in the file
     private double minSup; // minimum support
-    private LinkedList<int[]> candidates;
-    private LinkedList<int[]> transactions;
+    private ArrayList<int[]> candidates; //arraylist of integer arrays 
+    private ArrayList<ArrayList<Integer>> transactions; 
 
     private Apriori() {
-        itemsets = new LinkedList<int[]>();
-        candidates = new LinkedList<int[]>();
-        transactions = new LinkedList<int[]>();
+        itemsets = new ArrayList<int[]>();
+        candidates = new ArrayList<int[]>();
+        transactions = new ArrayList<ArrayList<Integer>>();
     }
     
     private void configure(String[] args) throws Exception
     {        
         if (args.length != 0) {
-        	transaFile = args[0];
+            transaFile = args[0];
         }
         else 
-        	transaFile = "data.dat";
-    	
-    	if (args.length >= 2) {
-    		minSup = Double.parseDouble(args[1]);
-    	}
-    	else 
-    		minSup = .7;
-    	if (minSup > 1 || minSup < 0) throw new Exception("minSup: bad value");
-    	
+            transaFile = "data.dat";
+        
+        if (args.length >= 2) {
+            minSup = Double.parseDouble(args[1]);
+        }
+        else 
+            minSup = .7;
 
-    	numItems = 0;
-    	numTransactions=0;
-    	BufferedReader input = new BufferedReader(new FileReader(transaFile));
+        if (minSup > 1 || minSup < 0) throw new Exception("minSup: bad value"); 
 
-    	while (input.ready()) {    		
-    		String line = input.readLine();
-    		numTransactions++;
-    		StringTokenizer t = new StringTokenizer(line," ");
-            int lengthSoFar = 0;
-    		while (t.hasMoreTokens()) {
-    			int x = Integer.parseInt(t.nextToken());
+        numTransactions=0;
+        BufferedReader input = new BufferedReader(new FileReader(transaFile));
+
+        while (input.ready()) {         
+            String line = input.readLine();
+            numTransactions++;
+            StringTokenizer t = new StringTokenizer(line," ");
+            transactions.add(new ArrayList<Integer>());
+            while (t.hasMoreTokens()) {
+                int x = Integer.parseInt(t.nextToken());
+                transactions.get(numTransactions-1).add(x);
                 int[] temp = new int[1];
                 temp[0] = x;
                 itemsets.add(temp);
-                lengthSoFar++;
-    			if (lengthSoFar > numItems) {
-    				numItems = lengthSoFar;
-    			}
-    		}
-            int[] lineBreak = new int[1];
-            lineBreak[0] = -1;
-            itemsets.add(lineBreak);
-    	}  
-        int start = 0;
-        for(int i = 0; i < numTransactions; i++) {
-            int[] transaction = new int[numItems];
-            for (int j = start; j < itemsets.size(); j++) {
-                int[] temp = itemsets.get(j);
-                if(temp[0] == -1) {
-                    itemsets.remove(j);
-                    start = j;
-                    break;
-                }
-                transaction[j-start] = temp[0];
-                System.out.println(j-start);
             }
-            transactions.add(transaction);
-        }
+        }  
     }
 
     public static void main(String[] args)throws Exception {
-    	Apriori test = new Apriori();
+        Apriori test = new Apriori();
         test.configure(args);
         for(int i = 0; i < test.transactions.size(); i++) {
-            System.out.println(Arrays.toString(test.transactions.get(i)));
+            for(int k = 0; k < test.transactions.get(i).size();k++) {
+                System.out.print(test.transactions.get(i).get(k));
+                System.out.print(" ");
+            }
             System.out.println();
-            System.out.println("numItems = " + test.numItems);
-            System.out.println("itemsets.size = " + test.itemsets.size());
-            System.out.println();
+        }
+
+        for(int i = 0; i < test.itemsets.size(); i++) {
+            System.out.print(test.itemsets.get(i)[0]);
+            System.out.print(" \n");
         }
     }
 }
@@ -92,7 +74,7 @@ class HashTrie {
     public HashTrie() {
        root = new HashMap<int[], Integer>();
     }
-    public HashTrie(LinkedList<int[]> candidates) {
+    public HashTrie(ArrayList<int[]> candidates) {
         root = new HashMap<int[], Integer>();
         for (int i = 0; i < candidates.size(); i++) {
             add(candidates.get(i));
@@ -115,15 +97,17 @@ class HashTrie {
         } 
     }
  
-    public LinkedList<int[]> generateNewItemsets(LinkedList<int[]> transactions) {
+    public ArrayList<int[]> generateNewItemsets(ArrayList<ArrayList<Integer>> transactions) {
         HashMap<int[], Integer> currentNode = root;
-        LinkedList<int[]> newItemsets = null;
+        ArrayList<int[]> newItemsets = null;
         boolean safe = false;
         for (int[] key : currentNode.keySet()) {
             for (int i = 0; i < transactions.size(); i++) {
-                if(Arrays.equals(key, Arrays.copyOf(transactions.get(i), key.length))) {
-                    safe = true;
-                    break;
+                for(int j = 0; j < key.length; j++) {
+                    if(transactions.get(i).get(j) == key[j]) {
+                        safe = true;
+                        break;
+                    }
                 }
             }
             if(!safe) {
